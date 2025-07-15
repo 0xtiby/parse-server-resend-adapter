@@ -1,191 +1,285 @@
-# Package Name
+# Parse Server Resend Adapter
 
-Package description
+A modern email adapter for Parse Server that uses [Resend](https://resend.com/) to send beautiful, customizable emails with React Email templates.
+
+## Features
+
+- 🚀 **Easy Integration** - Drop-in replacement for Parse Server's built-in email adapter
+- 📧 **Beautiful Templates** - Pre-built React Email templates for verification and password reset emails
+- 🎨 **Customizable** - Support for custom branding (logo, colors) and custom templates
+- 📱 **Responsive** - Mobile-friendly email templates with Tailwind CSS
+- 🔒 **TypeScript** - Full TypeScript support with type definitions
+- ⚡ **Modern** - Built with the latest Resend API and React Email
 
 ## Installation
 
 ```bash
-npm install package-name
+npm install parse-server-resend-adapter
 # or
-pnpm add package-name
+yarn add parse-server-resend-adapter
 # or
-yarn add package-name
+pnpm add parse-server-resend-adapter
 ```
 
-## Usage
+## Quick Start
 
+### 1. Get your Resend API key
+
+Sign up at [Resend](https://resend.com/) and get your API key from the dashboard.
+
+### 2. Configure Parse Server
+
+```javascript
+import { ResendEmailAdapter } from 'parse-server-resend-adapter';
+
+const parseServer = new ParseServer({
+  // ... other Parse Server options
+  emailAdapter: new ResendEmailAdapter({
+    apiKey: 'your-resend-api-key',
+    defaultFrom: 'noreply@yourdomain.com',
+    brandLogoUrl: 'https://yourdomain.com/logo.png', // optional
+    brandColor: '#007bff', // optional, defaults to #000000
+  }),
+  appName: 'Your App Name',
+  publicServerURL: 'https://yourserver.com/parse',
+});
+```
+
+### 3. That's it!
+
+Parse Server will now use Resend to send verification emails and password reset emails with beautiful, responsive templates.
+
+## Configuration Options
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| `apiKey` | `string` | ✅ | - | Your Resend API key |
+| `defaultFrom` | `string` | ✅ | - | Default sender email address |
+| `brandLogoUrl` | `string` | ❌ | - | URL to your brand logo (displayed in emails) |
+| `brandColor` | `string` | ❌ | `#000000` | Brand color for buttons and accents |
+| `templates` | `object` | ❌ | - | Custom email templates (see below) |
+
+## Custom Templates
+
+> ⚠️ **Version Compatibility Warning**
+> 
+> When using custom templates, ensure that your project uses compatible versions of React Email dependencies with this adapter. Version mismatches can cause rendering errors like "Objects are not valid as a React child".
+> 
+> **Required versions:**
+> - `@react-email/components`: `^0.3.1`
+> - `react`: `^19.0.0` 
+> - `react-dom`: `^19.0.0`
+> 
+> If you encounter rendering errors with custom templates, check that your project's `package.json` uses compatible versions.
+
+You can provide your own React Email templates for verification and password reset emails:
+
+```javascript
+import { ResendEmailAdapter } from 'parse-server-resend-adapter';
+import MyVerificationTemplate from './templates/MyVerificationTemplate';
+import MyPasswordResetTemplate from './templates/MyPasswordResetTemplate';
+
+const adapter = new ResendEmailAdapter({
+  apiKey: 'your-resend-api-key',
+  defaultFrom: 'noreply@yourdomain.com',
+  templates: {
+    verification: MyVerificationTemplate,
+    passwordReset: MyPasswordResetTemplate,
+  },
+});
+```
+
+### Custom Template Props
+
+Your custom templates will receive the following props:
+
+**Verification Email Template:**
 ```typescript
-import { YourClass } from "package-name";
-
-// Usage example
-const instance = new YourClass();
+{
+  link: string;           // Verification link
+  appName: string;        // Your app name
+  brandLogoUrl?: string;  // Your brand logo URL
+  brandColor?: string;    // Your brand color
+}
 ```
 
-## API
+**Password Reset Email Template:**
+```typescript
+{
+  link: string;           // Password reset link
+  appName: string;        // Your app name
+  brandLogoUrl?: string;  // Your brand logo URL
+  brandColor?: string;    // Your brand color
+}
+```
 
-### YourClass
+### Example Custom Template
 
-Description of your main export.
+```jsx
+import { Html, Head, Body, Container, Text, Button } from '@react-email/components';
+
+export const MyVerificationTemplate = ({ 
+  link, 
+  appName, 
+  brandLogoUrl, 
+  brandColor = '#007bff'
+}) => {
+  return (
+    <Html>
+      <Head />
+      <Body style={{ fontFamily: 'Arial, sans-serif' }}>
+        <Container>
+          <Text>Welcome to {appName}!</Text>
+          <Text>Please verify your email address:</Text>
+          <Button 
+            href={link}
+            style={{ 
+              backgroundColor: brandColor,
+              color: 'white',
+              padding: '12px 24px',
+              borderRadius: '6px',
+              textDecoration: 'none'
+            }}
+          >
+            Verify Email
+          </Button>
+        </Container>
+      </Body>
+    </Html>
+  );
+};
+```
+
+## Default Templates
+
+The adapter comes with beautiful, responsive default templates that include:
+
+- **Professional Design** - Clean, modern layout
+- **Mobile Responsive** - Optimized for all devices
+- **Security Notes** - Built-in security warnings and best practices
+- **Accessibility** - Proper contrast and readable fonts
+- **Fallback Links** - Copy-paste links when buttons don't work
+
+## Environment Variables
+
+You can also configure the adapter using environment variables:
+
+```bash
+RESEND_API_KEY=your-resend-api-key
+EMAIL_FROM=noreply@yourdomain.com
+EMAIL_BRAND_LOGO_URL=https://yourdomain.com/logo.png
+EMAIL_BRAND_COLOR=#007bff
+```
+
+```javascript
+const adapter = new ResendEmailAdapter({
+  apiKey: process.env.RESEND_API_KEY,
+  defaultFrom: process.env.EMAIL_FROM,
+  brandLogoUrl: process.env.EMAIL_BRAND_LOGO_URL,
+  brandColor: process.env.EMAIL_BRAND_COLOR,
+});
+```
+
+## API Reference
+
+### ResendEmailAdapter
+
+The main adapter class that extends Parse Server's `MailAdapter`.
 
 #### Methods
 
-- `method()` - Description of method
+##### `sendMail(options)`
+Send a custom email.
+
+```typescript
+await adapter.sendMail({
+  to: 'user@example.com',
+  subject: 'Hello World',
+  text: 'Plain text content',
+  html: '<h1>HTML content</h1>', // optional
+  from: 'sender@yourdomain.com', // optional, uses defaultFrom if not provided
+});
+```
+
+##### `sendVerificationEmail({ link, appName, user })`
+Send a verification email (called automatically by Parse Server).
+
+##### `sendPasswordResetEmail({ link, appName, user })`
+Send a password reset email (called automatically by Parse Server).
+
+## Troubleshooting
+
+### "Objects are not valid as a React child" Error
+
+This error typically occurs when there are version mismatches between React Email dependencies. To fix:
+
+1. **Check your dependencies** - Ensure your project uses compatible versions:
+   ```json
+   {
+     "@react-email/components": "^0.3.1",
+     "react": "^19.0.0",
+     "react-dom": "^19.0.0"
+   }
+   ```
+
+2. **Update package versions** - If using older versions, update them:
+   ```bash
+   npm install @react-email/components@^0.3.1 react@^19.0.0 react-dom@^19.0.0
+   ```
+
+3. **Clear node_modules** - Sometimes a clean install helps:
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+
+4. **Use default templates** - If custom templates still don't work, the default templates will always work as a fallback.
+
+### Template Not Rendering
+
+- Ensure your custom template exports a React component
+- Check that all required props are handled in your template
+- Verify your template uses only `@react-email/components` for email-safe rendering
+
+## Requirements
+
+- Node.js 14 or higher
+- Parse Server 4.0 or higher
+- A verified domain in Resend
 
 ## Development
 
-### 🔧 Quick Setup
-
-To quickly set up branch protection rules, run the automated script:
-
 ```bash
-# Make sure you have GitHub CLI installed and authenticated
-gh auth login
+# Clone the repository
+git clone https://github.com/0xtiby/parse-server-resend-adapter.git
 
-# Run the setup script (choose one method)
-./scripts/setup-branch-protection.sh
-# or
-npm run setup:branch-protection
+# Install dependencies
+npm install
+
+# Build the package
+npm run build
 ```
 
-This script will automatically:
+## Contributing
 
-- ✅ Detect your main branch (main/master)
-- ✅ Configure branch protection rules
-- ✅ Require pull requests before merging
-- ✅ Require at least 1 approval
-- ✅ Dismiss stale reviews on new commits
-- ✅ Disable force pushes and deletions
-- ✅ Apply rules to administrators
-- ✅ **Allow GitHub Actions to create and approve pull requests**
-
-#### 🤖 GitHub Actions Permissions
-
-The script automatically configures GitHub Actions to create and approve pull requests. This is essential for:
-
-- **Automated releases**: Allows semantic-release to create PRs for version bumps and changelog updates
-- **Dependency updates**: Enables Dependabot and other bots to create PRs
-- **Automated workflows**: Permits GitHub Actions to interact with pull requests
-
-**To modify this behavior:**
-
-```bash
-# Disable GitHub Actions PR creation/approval
-gh api repos/OWNER/REPO/actions/permissions/workflow \
-  --method PUT \
-  --field can_approve_pull_request_reviews=false
-
-# Re-enable GitHub Actions PR creation/approval
-gh api repos/OWNER/REPO/actions/permissions/workflow \
-  --method PUT \
-  --field can_approve_pull_request_reviews=true
-```
-
-**To allow administrators to bypass branch protection:**
-
-```bash
-# Edit the script and change line 54 to:
-"enforce_admins": false
-```
-
-Or manually in GitHub: Settings → Branches → Edit rule → Uncheck "Include administrators"
-
-### Manual Repository Security Setup (Alternative)
-
-If you prefer manual setup, configure branch protection rules:
-
-#### Branch Protection Rules
-
-1. Go to your GitHub repository
-2. Navigate to Settings → Branches
-3. Click "Add rule" for the `main`/`master` branch
-4. Configure the following settings:
-
-**Required settings:**
-
-- ✅ Require a pull request before merging
-- ✅ Require approvals: 1 (or more for team projects)
-- ✅ Dismiss stale PR approvals when new commits are pushed
-- ✅ Require status checks to pass before merging
-- ✅ Require branches to be up to date before merging
-- ✅ Require conversation resolution before merging
-- ✅ Restrict pushes that create files larger than 100MB
-
-**Optional but recommended:**
-
-- ✅ Require signed commits
-- ✅ Include administrators (applies rules to repo admins too)
-- ✅ Allow force pushes: No one (or "Specify who can force push" for admins only)
-- ✅ Allow deletions: No one
-
-#### Status Checks (if you add CI/tests)
-
-If you add testing workflows, also enable:
-
-- ✅ Require status checks to pass before merging
-- Add your test workflow names to required checks
-
-This ensures:
-
-- No direct commits to main/master
-- All changes go through pull requests
-- Code review is mandatory
-- Automated releases work properly
-
-### Setup for Automated Releases
-
-To enable automated releases, configure the following secrets in your GitHub repository:
-
-#### 1. NPM Token
-
-1. Go to [npmjs.com](https://www.npmjs.com) and sign in
-2. Click on your avatar → "Access Tokens"
-3. Click "Generate New Token" → "Automation"
-4. Copy the generated token
-5. In your GitHub repo: Settings → Secrets and variables → Actions
-6. Click "New repository secret"
-7. Name: `NPM_TOKEN`
-8. Value: paste your npm token
-
-#### 2. GitHub Token
-
-The `GITHUB_TOKEN` is automatically provided by GitHub Actions, no additional configuration needed.
-
-#### 3. Repository Configuration
-
-Make sure in Settings → Actions → General:
-
-- "Allow GitHub Actions to create and approve pull requests" is checked
-- Workflow permissions: "Read and write permissions" is selected
-
-### Releases
-
-This project uses [semantic-release](https://github.com/semantic-release/semantic-release) for automated releases. Use conventional commits:
-
-- `feat:` - New feature (minor version)
-- `fix:` - Bug fix (patch version)
-- `feat!:` or `BREAKING CHANGE:` - Breaking change (major version)
-
-Examples:
-
-```
-feat: add new authentication method
-fix: resolve memory leak in parser
-feat!: remove deprecated API endpoints
-```
-
-### Release Process
-
-1. Make your commits following conventional commits
-2. Create a pull request to `main`/`master`
-3. Get code review and approval
-4. Merge the pull request
-5. GitHub Actions triggers automatically
-6. A new release is created if significant changes are detected
-7. The package is published to npm
-8. A GitHub release with changelog is generated
-9. 🤖 **Automated repo update**: A pull request is automatically created to update `package.json` version and `CHANGELOG.md`
-10. Review and merge the automated PR to keep your repository in sync
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT
+MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- 📧 **Email**: Create an issue on GitHub
+- 📚 **Documentation**: [Resend Documentation](https://resend.com/docs)
+- 💬 **Community**: [Parse Community Forum](https://community.parseplatform.org/)
+
+## Related
+
+- [Parse Server](https://github.com/parse-community/parse-server)
+- [Resend](https://resend.com/)
+- [React Email](https://react.email/)
+
+---
+
+Made with ❤️ by [0xtiby](https://github.com/0xtiby)

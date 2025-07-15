@@ -1,0 +1,46 @@
+{
+  "name": "parse-server-resend-adapter",
+  "version": "1.4.0",
+  "description": "Package description",
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsup ./src",
+    "setup:branch-protection": "./scripts/setup-branch-protection.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xtiby/parse-server-resend-adapter.git"
+  },
+  "keywords": [],
+  "author": "0xtiby <https://github.com/0xtiby>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/0xtiby/parse-server-resend-adapter/issues"
+  },
+  "homepage": "https://github.com/0xtiby/parse-server-resend-adapter#readme",
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^9.2.6",
+    "@semantic-release/npm": "^11.0.2",
+    "@semantic-release/release-notes-generator": "^12.1.0",
+    "semantic-release": "^23.0.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5"
+  }
+}
